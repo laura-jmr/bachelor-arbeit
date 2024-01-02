@@ -1,0 +1,44 @@
+{
+  "manifest_version": 3,
+  "name": "Focus Mode",
+  "description": "Enable focus mode on Chrome's official Extensions and Chrome Web Store documentation.",
+  "version": "1.0",
+  "icons": {
+    "192": "logo192.png",
+    "512": "logo512.png"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_icon": {
+      "192": "logo192.png",
+      "512": "logo512.png"
+    }
+  },
+  "permissions": ["activeTab", "scripting", "storage"],
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Ctrl+B",
+        "mac": "Command+B"
+      }
+    }
+  },
+  "host_permissions": ["<all_urls>"],
+  "content_scripts": [
+    {
+      "js": ["content.js"],
+      "css": ["content.css"],
+      "matches": [
+        "https://www.f4.htw-berlin.de/*",
+        "https://developer.chrome.com/docs/extensions/*"
+      ]
+    }
+  ],
+  "minimum_chrome_version": "102",
+  "omnibox": {
+    "keyword": "api"
+  }
+}
