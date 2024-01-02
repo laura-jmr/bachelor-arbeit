@@ -7,8 +7,8 @@ var display = false;
 // Initialisiert das Badge bei Reload und setzt
 // den Status auf "OFF" falls keiner bisher gesetzt wurde
 chrome.runtime.onInstalled.addListener(() => {
-    chrome.storage.local.get({ badgeState: 'OFF' }, (data) => {
-        const initialBadgeState = data.badgeState;
+    chrome.storage.local.get('badgeState', (data) => {
+        const initialBadgeState = data.badgeState || 'OFF'; // Set default value if undefined
         chrome.action.setBadgeText({ text: initialBadgeState });
         toggleDisplay(initialBadgeState);
     });
@@ -18,7 +18,11 @@ chrome.runtime.onInstalled.addListener(() => {
 chrome.action.onClicked.addListener(async (tab) => {
     chrome.storage.local.get(["badgeState"]).then((result) => {
         console.log("badge state is: " + result.badgeState);
-        const initialBadgeState = result.badgeState;
+        var initialBadgeState = result.badgeState;
+        if (typeof initialBadgeState === "undefined") {
+            initialBadgeState = "OFF";
+        }
+
         if (initialBadgeState === 'ON') {
             console.log("next state is OFF");
             chrome.action.setBadgeText({ text: "OFF" });
@@ -81,6 +85,45 @@ const generateAltText = async (message, sendResponse) => {
     }
 };
 
+const generateLeichteSprache = async (message, sendResponse) => {
+    if (typeof message.pText !== "undefined") {
+        // Entkommentieren, um Local Storage zu resetten
+
+        // await chrome.storage.local.clear(function() {
+        //     var error = chrome.runtime.lastError;
+        //     if (error) {
+        //         console.error(error);
+        //     }
+        //     console.log("cleared")
+        // });
+        await chrome.storage.local.get(["" + message.pText]).then((result) => {
+            console.log(JSON.stringify(result));
+            const storedValue = result[message.pText];
+            console.log("Value currently is ", storedValue);
+
+            if (typeof storedValue == "undefined") {
+                getLeichteSprache(message.pText)
+                    .then(res => {
+                        console.log("IN GENLEICHTE SPRACHE: " + res); 
+                        sendResponse({ leichteSprache: res });
+                        return true;
+                    })
+                    .catch(error => {
+                        console.error('Error occurred:', error);
+                        sendResponse({ error: error.message });
+                        return true;
+                    });
+            } else {
+                console.log(storedValue); 
+                sendResponse({ leichteSprache: storedValue });
+                return true;
+            }
+        });
+    } else {
+        console.log("Undefined pText")
+    }
+};
+
 // Reagiert auf die Message vom Content Skript
 chrome.runtime.onMessage.addListener(
     function (message, sender, sendResponse) {
@@ -89,6 +132,10 @@ chrome.runtime.onMessage.addListener(
             if (message.greeting === 'alt') {
                 console.log("Im background worker: " + message.imgUrl);
                 generateAltText(message, sendResponse);
+                return true;
+            } else if (message.greeting === 'leichteSprache') {
+                console.log("Im background worker: " + message.pText);
+                generateLeichteSprache(message, sendResponse);
                 return true;
             }
         } else {
@@ -136,6 +183,49 @@ async function getGPT(tags, imageUrl) {
         console.log(contentResponse);
         await chrome.storage.local.set({ [imageUrl]: JSON.stringify(contentResponse) }).then(() => {
             console.log("Set filtered taglist for " + imageUrl + " to chrome local storage");
+        });
+        return contentResponse;
+    } catch (error) {
+        console.error('Error in getGPT:', error);
+        throw error;
+    }
+}
+
+async function getLeichteSprache(pText) {
+    const apiUrl = 'https://api.openai.com/v1/chat/completions';
+    const apiKey = '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';
+    const user_prompt = `Convert the following text to fullfill the guidelines for "Leichte Sprache": ${pText}`;
+    const system_prompt = "Your answer fullfills the guidelines for 'Leichte Sprache'. You extract the main information of the text and display them in a very comprehensible form. You only use independent clauses without commas.";
+
+    console.log("prompt for chatgpt: " + user_prompt);
+    try {
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                "model": "gpt-3.5-turbo",
+                "messages": [{
+                    "role": "system",
+                    "content": system_prompt
+                }, {
+                    "role": "user",
+                    "content": user_prompt
+                }]
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const responseJson = await response.json();
+        const contentResponse = responseJson.choices[0].message.content;
+        console.log(contentResponse);
+        await chrome.storage.local.set({ [pText]: JSON.stringify(contentResponse) }).then(() => {
+            console.log("Set leichte sprache to chrome local storage");
         });
         return contentResponse;
     } catch (error) {
