@@ -35,6 +35,37 @@ chrome.action.onClicked.addListener(async (tab) => {
             toggleDisplay("ON");
         }
     })
+    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+        chrome.tabs.reload(tabs[0].id);
+    });
+});
+
+chrome.commands.onCommand.addListener(async (command) => {
+    console.log(`Command "${command}" triggered`);
+    if (command === "toggle_active") {
+        chrome.storage.local.get(["badgeState"]).then((result) => {
+            console.log("badge state is: " + result.badgeState);
+            var initialBadgeState = result.badgeState;
+            if (typeof initialBadgeState === "undefined") {
+                initialBadgeState = "OFF";
+            }
+
+            if (initialBadgeState === 'ON') {
+                console.log("next state is OFF");
+                chrome.action.setBadgeText({ text: "OFF" });
+                chrome.storage.local.set({ badgeState: "OFF" });
+                toggleDisplay("OFF");
+            } else if (initialBadgeState === 'OFF') {
+                console.log("next state is ON");
+                chrome.action.setBadgeText({ text: "ON" });
+                chrome.storage.local.set({ badgeState: "ON" });
+                toggleDisplay("ON");
+            }
+        })
+        chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+            chrome.tabs.reload(tabs[0].id);
+        });
+    }
 });
 
 // Toggeln der display-Variable
@@ -65,7 +96,7 @@ const generateAltText = async (message, sendResponse) => {
                 getAlt(message.imgUrl)
                     .then(tags => getGPT(tags, message.imgUrl))
                     .then(alt => {
-                        console.log(alt); 
+                        console.log(alt);
                         sendResponse({ alt: alt });
                         return true;
                     })
@@ -75,7 +106,7 @@ const generateAltText = async (message, sendResponse) => {
                         return true;
                     });
             } else {
-                console.log(storedValue); 
+                console.log(storedValue);
                 sendResponse({ alt: storedValue });
                 return true;
             }
@@ -104,7 +135,7 @@ const generateLeichteSprache = async (message, sendResponse) => {
             if (typeof storedValue == "undefined") {
                 getLeichteSprache(message.pText)
                     .then(res => {
-                        console.log("IN GENLEICHTE SPRACHE: " + res); 
+                        console.log("IN GENLEICHTE SPRACHE: " + res);
                         sendResponse({ leichteSprache: res });
                         return true;
                     })
@@ -114,7 +145,7 @@ const generateLeichteSprache = async (message, sendResponse) => {
                         return true;
                     });
             } else {
-                console.log(storedValue); 
+                console.log(storedValue);
                 sendResponse({ leichteSprache: storedValue });
                 return true;
             }
@@ -262,12 +293,12 @@ async function getAlt(imageUrl) {
         const transformedTags = filteredTags.map(entry => {
             return {
                 confidence: entry.confidence,
-                tag: entry.tag.en 
+                tag: entry.tag.en
             };
         });
         return JSON.stringify(transformedTags);
     } catch (error) {
         console.error('There was a problem with the fetch operation:', error);
-        throw error; 
+        throw error;
     }
 }

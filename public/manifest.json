@@ -19,11 +19,12 @@
   },
   "permissions": ["activeTab", "scripting", "storage"],
   "commands": {
-    "_execute_action": {
+    "toggle_active": {
       "suggested_key": {
         "default": "Ctrl+B",
         "mac": "Command+B"
-      }
+      },
+      "description": "Toggle the extension via keyboard."
     }
   },
   "host_permissions": ["<all_urls>"],
