@@ -12,12 +12,17 @@
     "type": "module"
   },
   "action": {
+    // "default_popup": "index.html",
     "default_icon": {
       "192": "logo192.png",
       "512": "logo512.png"
     }
   },
-  "permissions": ["activeTab", "scripting", "storage"],
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage"
+  ],
   "commands": {
     "toggle_active": {
       "suggested_key": {
@@ -27,11 +32,17 @@
       "description": "Toggle the extension via keyboard."
     }
   },
-  "host_permissions": ["<all_urls>"],
+  "host_permissions": [
+    "<all_urls>"
+  ],
   "content_scripts": [
     {
-      "js": ["content.js"],
-      "css": ["content.css"],
+      "js": [
+        "content.js"
+      ],
+      "css": [
+        "content.css"
+      ],
       "matches": [
         "https://www.f4.htw-berlin.de/*",
         "https://developer.chrome.com/docs/extensions/*"
