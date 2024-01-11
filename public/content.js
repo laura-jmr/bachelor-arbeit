@@ -39,7 +39,7 @@ function createDomElement(html) {
         const response = await chrome.runtime.sendMessage({ greeting: 'leichteSprache', pText: paragraph.textContent });
         console.log(response);
         console.log(response.leichteSprache);
-        const transformedResponse = response.leichteSprache.replace(/[.!?]/g, match => match + '<br><br>').trim().slice(1, -1);
+        const transformedResponse = response.leichteSprache.replace(/[.!?]/g, match => match + '<br><br>').trim();
         console.log(transformedResponse);
         paragraph.innerHTML = transformedResponse;
         paragraph.classList.add("leichte-sprache");
