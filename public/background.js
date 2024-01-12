@@ -191,10 +191,13 @@ const updateToggleAltText = async (message, sendResponse) => {
         await chrome.storage.local.set({ ["toggleValueAlt"]: updatedToggleValueAlt }).then(() => {
             console.log("Updated toggle value alt text chrome local storage");
         });
+        chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+            chrome.tabs.reload(tabs[0].id);
+        });
         sendResponse({ toggleValueAlt: updatedToggleValueAlt });
         return true;
     } else {
-        console.log("Undefined toggleValueAlt")
+        console.log("Undefined toggleValueAlt");
     }
 };
 const updateToggleEasyLanguage = async (message, sendResponse) => {
@@ -204,10 +207,13 @@ const updateToggleEasyLanguage = async (message, sendResponse) => {
         await chrome.storage.local.set({ ["toggleEasyLanguage"]: updatedToggleValueEasyLanguagge }).then(() => {
             console.log("Updated toggle value easy language chrome local storage");
         });
+        chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+            chrome.tabs.reload(tabs[0].id);
+        });
         sendResponse({ toggleEasyLanguage: updatedToggleValueEasyLanguagge });
         return true;
     } else {
-        console.log("Undefined toggleEasyLanguage")
+        console.log("Undefined toggleEasyLanguage");
     }
 };
 
