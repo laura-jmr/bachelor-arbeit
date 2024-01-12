@@ -155,6 +155,66 @@ const generateLeichteSprache = async (message, sendResponse) => {
     }
 };
 
+const getInitialValues = async (sendResponse) => {
+    var resultInitialAltText = false;
+    var resultInitialEasyLanguage = false;
+
+    await chrome.storage.local.get(["toggleValueAlt"]).then((result) => {
+        console.log(JSON.stringify(result));
+        const storedValue = result["toggleValueAlt"];
+        console.log("Value currently is ", storedValue);
+
+        if (typeof storedValue == "undefined") {
+            console.log("resultInitialAltText set to false");
+            resultInitialAltText = false;
+        } else {
+            resultInitialAltText = storedValue;
+        }
+    });
+    await chrome.storage.local.get(["toggleEasyLanguage"]).then((result) => {
+        console.log(JSON.stringify(result));
+        const storedValue = result["toggleEasyLanguage"];
+        console.log("Value currently is ", storedValue);
+
+        if (typeof storedValue == "undefined") {
+            console.log("resultInitialEasyLanguage set to false");
+            resultInitialEasyLanguage = false;
+        } else {
+            resultInitialEasyLanguage = storedValue;
+        }
+    });
+
+    sendResponse({initialAltText: resultInitialAltText, initialEasyLanguage: resultInitialEasyLanguage})
+    return true;
+};
+
+const updateToggleAltText = async (message, sendResponse) => {
+    if (typeof message.toggleValueAlt !== "undefined") {
+        const updatedToggleValueAlt = !message.toggleValueAlt;
+        console.log("Updated toggle alt value from " + message.toggleValueAlt + " to " + updatedToggleValueAlt);
+        await chrome.storage.local.set({ ["toggleValueAlt"]: updatedToggleValueAlt }).then(() => {
+            console.log("Updated toggle value alt text chrome local storage");
+        });
+        sendResponse({ toggleValueAlt: updatedToggleValueAlt });
+        return true;
+    } else {
+        console.log("Undefined toggleValueAlt")
+    }
+};
+const updateToggleEasyLanguage = async (message, sendResponse) => {
+    if (typeof message.toggleEasyLanguage !== "undefined") {
+        const updatedToggleValueEasyLanguagge = !message.toggleEasyLanguage;
+        console.log("Updated toggle alt value from " + message.toggleEasyLanguage + " to " + updatedToggleValueEasyLanguagge);
+        await chrome.storage.local.set({ ["toggleEasyLanguage"]: updatedToggleValueEasyLanguagge }).then(() => {
+            console.log("Updated toggle value easy language chrome local storage");
+        });
+        sendResponse({ toggleEasyLanguage: updatedToggleValueEasyLanguagge });
+        return true;
+    } else {
+        console.log("Undefined toggleEasyLanguage")
+    }
+};
+
 // Reagiert auf die Message vom Content Skript
 chrome.runtime.onMessage.addListener(
     function (message, sender, sendResponse) {
@@ -167,6 +227,20 @@ chrome.runtime.onMessage.addListener(
             } else if (message.greeting === 'leichteSprache') {
                 console.log("Im background worker: " + message.pText);
                 generateLeichteSprache(message, sendResponse);
+                return true;
+            } else if (message.greeting === 'getInitialValues') {
+                console.log("Im background worker: get initial values");
+                getInitialValues(sendResponse);
+                return true;
+            }
+            else if (message.greeting === 'toggleAltText') {
+                console.log("Im background worker: " + message.toggleValueAlt);
+                updateToggleAltText(message, sendResponse);
+                return true;
+            }
+            else if (message.greeting === 'toggleEasyLanguage') {
+                console.log("Im background worker: " + message.toggleEasyLanguage);
+                updateToggleEasyLanguage(message, sendResponse);
                 return true;
             }
         } else {
