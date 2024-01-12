@@ -6,3 +6,8 @@
   align-items: center;
   flex-direction: column;
 }
+
+#popup-window img {
+  width: 150px;
+  height: 150px;
+}

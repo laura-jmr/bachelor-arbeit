@@ -56,6 +56,7 @@ function App() {
 
   return (
     <div id="popup-window">
+      <img src='font-are-awesome-universal-accessibility.png' alt='accessibility icon'/>
       <h1>Barrierefreiheit Browser-Exension</h1>
       <h2>Einstellungen</h2>
       <p>Hier stellen Sie die Funktionen an oder aus.</p>
