@@ -28,6 +28,21 @@ const initializeToggles = async () => {
     });
 };
 
+// const websites = document.querySelectorAll("div.website");
+// const resultArray = [];
+
+// websites.forEach(website => {
+//     const a = website.firstChild;
+//     const websiteInfo = {
+//         href: a.href,
+//         textContent: a.textContent.trim()
+//     };
+//     resultArray.push(websiteInfo);
+// });
+
+// const outputString = JSON.stringify(resultArray);
+// console.log(outputString);
+
 // // Filtert alle Bilder auf der Webseite heraus, extrahiert die Sources und lässt den Service-Worker einen Alt-Text
 // // generieren, der dann unter dem Bild angezeigt wird
 // (async () => {
@@ -94,7 +109,13 @@ async function executeAltText() {
         console.log(images);
 
         images.forEach(async img => {
-            const response = await chrome.runtime.sendMessage({ greeting: 'alt', imgUrl: img.dataset.src });
+            var iUrl;
+            if (typeof img.dataset.src !== "undefined") {
+                iUrl = img.dataset.src;
+            } else if (typeof img.src !== "undefined") {
+                iUrl = img.src;
+            }
+            const response = await chrome.runtime.sendMessage({ greeting: 'alt', imgUrl: iUrl });
             console.log(response.alt);
             const altText = createDomElement(`
                 <p class="generated-alt-text">${response.alt}</p>

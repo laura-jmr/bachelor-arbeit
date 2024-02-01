@@ -33,8 +33,7 @@
       "js": ["content.js"],
       "css": ["content.css"],
       "matches": [
-        "https://www.f4.htw-berlin.de/*",
-        "https://developer.chrome.com/docs/extensions/*"
+        "<all_urls>"
       ]
     }
   ],
