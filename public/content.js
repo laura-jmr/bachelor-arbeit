@@ -1,6 +1,10 @@
+// Toggle-Werte sind initial false, um Schaden zu minimieren, falls das Updaten der Toggle-Werte nicht richtig ist 
+// Funktionen werden dann nämlich nicht ausgeführt
 var toggleAltText = false;
 var toggleLeichteSprache = false;
 
+// Initialisiert die Toggle-Werte mit den Werten aus dem lokalen Speicher in Chrome
+// Sind keine Werte im Speicher hinterlegt, werden die Werte auf false gesetzt
 const initializeToggles = async () => {
     await chrome.storage.local.get(["toggleValueAlt"]).then((result) => {
         const storedValue = result["toggleValueAlt"];
@@ -70,6 +74,7 @@ const initializeToggles = async () => {
 //     }
 // })();
 
+// Erstellt ein DOM-Element
 function createDomElement(html) {
     const dom = new DOMParser().parseFromString(html, 'text/html');
     return dom.body.firstElementChild;
@@ -102,6 +107,10 @@ function createDomElement(html) {
 //     }
 // })();
 
+// Triggert die Bild-Alt-Generierung
+// Sucht alle Bilder der Webseite
+// Schickt Nachricht mit Bild-Src-URL an den Service-Worker
+// Macht aus dem Ergebnis ein <p>-DOM-Element und fügt es unter dem jew. Bild ein
 async function executeAltText() {
     if (toggleAltText) {
         console.log("im Content skript: executing alt text");
@@ -123,16 +132,15 @@ async function executeAltText() {
             img.parentNode.insertBefore(altText, img.nextSibling);
         });
 
-        const manipuliert = createDomElement(`
-          <h1 class="test">HAHA ICH HAB EUCH MANIPULIERT</h1>
-        `);
-
-        document.body.append(manipuliert);
     } else {
         console.log("im Content skript: not executing alt text");
     }
 }
 
+// Triggert die Leichte-Sprache-Übersetzung
+// Sucht alle Paragraphen der Webseite
+// Schickt Nachricht mit Text der Paragraphen an den Service-Worker
+// Aufarbeitung des Ergebnisses und Überschreibung des alten Textes mit dem Neuen
 async function executeLeichteSprache () {
     if (toggleLeichteSprache) {
         console.log("im Content skript: executing leichte sprache");
@@ -153,7 +161,9 @@ async function executeLeichteSprache () {
     }
 }
 
-// Function to extract text content from an element
+// Hilfsfunktion, die HTML-Elemente von Texten in Abschnitte gliedert
+// Verbindet Überschriften mit jeweiligen darunterstehenden Paragraphen
+// Wird genutzt, um Kontext miteinzubeziehen in die Übersetzung
 function extractTextContent(elements) {
     const sectionContents = [];
     let currentSection = {};
@@ -185,6 +195,7 @@ function extractTextContent(elements) {
     return sectionContents;
 }
 
+// Aufruf der Funktionen
 initializeToggles().then(() => {
     executeAltText();
     executeLeichteSprache();

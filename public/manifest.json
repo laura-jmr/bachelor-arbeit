@@ -1,12 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Focus Mode",
-  "description": "Enable focus mode on Chrome's official Extensions and Chrome Web Store documentation.",
+  "name": "BA LAURA JUERGENSMEIER - Barrierefreiheit",
+  "description": "Diese Erweiterung ist Teil der Bachelorarbeit von Laura Jürgensmeier. Es handelt sich um einen Prototypen.",
   "version": "1.0",
-  "icons": {
-    "192": "logo192.png",
-    "512": "logo512.png"
-  },
   "background": {
     "service_worker": "background.js",
     "type": "module"
@@ -24,7 +20,7 @@
         "default": "Ctrl+B",
         "mac": "Command+B"
       },
-      "description": "Toggle the extension via keyboard."
+      "description": "Ein- und Ausschaltung mit der Tastatur"
     }
   },
   "host_permissions": ["<all_urls>"],

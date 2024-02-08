@@ -1,5 +1,6 @@
 /*global chrome*/
 import './App.css';
+// Schriftarten werden für die MUI-Bibliothek benötigt
 import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
@@ -12,32 +13,41 @@ import Switch from '@mui/material/Switch';
 
 
 function App() {
+  // Toggle der Funktion der Bild-Alt-Generierung
   const [alternativeText, setAlternativeText] = useState(false);
+  
+  // Toggle der Funktion der Leichte-Sprache-Übersetzung
   const [easyLanguage, setEasyLanguage] = useState(false);
 
   useEffect(() => {
-    // Fetch initial values from Chrome local storage
+    // Fetcht initale Werte der Toggles aus dem lokalen Speicher von Chrome
     chrome.runtime.sendMessage({ greeting: 'getInitialValues' }, (response) => {
       setAlternativeText(response.initialAltText);
       setEasyLanguage(response.initialEasyLanguage);
     });
   }, []);
+
+  // Ausgelagerte Funktion für onChange-Methode des Leichte-Sprache-Toggles
+  // Wird benötigt, um asynchrone Aufrufe und Weiterverarbeitung fehlerfrei zu handlen
+  // Schickt eine Nachricht an den Service-Worker mit neuem Toggle-Wert
   const sendMessageToBackgroundEasyLanguage = async () => {
-    // Send a message to background script when the alternativeText switch is toggled
     const response = await chrome.runtime.sendMessage({ greeting: 'toggleEasyLanguage', toggleEasyLanguage: easyLanguage });
     console.log("Im Send Message Alt: " + response.toggleEasyLanguage);
     console.log("Im Send Message Alt Typ: " + typeof response.toggleEasyLanguage);
     return response;
   };
 
+  // Ausgelagerte Funktion für onChange-Methode des Bild-Alt-Toggles
+  // Wird benötigt, um asynchrone Aufrufe und Weiterverarbeitung fehlerfrei zu handlen
+  // Schickt eine Nachricht an den Service-Worker mit neuem Toggle-Wert
   const sendMessageToBackgroundAlt = async () => {
-    // Send a message to background script when the alternativeText switch is toggled
     const response = await chrome.runtime.sendMessage({ greeting: 'toggleAltText', toggleValueAlt: alternativeText });
     console.log("Im Send Message Alt: " + response.toggleValueAlt);
     console.log("Im Send Message Alt Typ: " + typeof response.toggleValueAlt);
     return response;
   };
 
+  // onChange-Methode des Bild-Alt-Toggles im Interface
   const handleAlternativeTextChange = async () => {
     console.log("Before sendMessageToBackgroundAlt");
     const response = await sendMessageToBackgroundAlt();
@@ -46,9 +56,8 @@ function App() {
     setAlternativeText(response.toggleValueAlt);
   };
 
-
+// onChange-Methode des Leichte-Sprache-Toggles im Interface
   const handleEasyLanguageChange = async () => {
-    // Send a message to background script when the easyLanguage switch is toggled
     const response = await sendMessageToBackgroundEasyLanguage();
     console.log("Im Handle on Change Alt: " + response.toggleEasyLanguage);
     setEasyLanguage(response.toggleEasyLanguage);
