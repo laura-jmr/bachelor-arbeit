@@ -1,77 +1,73 @@
 import './backgroundtest1.js';
 import './backgroundtest2.js';
 
-// zum Togglen der Anzeige der Inhalte der Erweiterung
-var display = false;
-
 // Initialisiert das Badge bei Reload und setzt
 // den Status auf "OFF" falls keiner bisher gesetzt wurde
 chrome.runtime.onInstalled.addListener(() => {
-    chrome.storage.local.get('badgeState', (data) => {
-        const initialBadgeState = data.badgeState || 'OFF'; // Set default value if undefined
-        chrome.action.setBadgeText({ text: initialBadgeState });
-        toggleDisplay(initialBadgeState);
-    });
+    checkBadge();
 });
 
-// Toggelt den Badge Status zwischen "OFF" und "ON" und triggert dabei die display-Variable
-chrome.action.onClicked.addListener(async (tab) => {
-    chrome.storage.local.get(["badgeState"]).then((result) => {
-        console.log("badge state is: " + result.badgeState);
-        var initialBadgeState = result.badgeState;
-        if (typeof initialBadgeState === "undefined") {
-            initialBadgeState = "OFF";
-        }
+// chrome.commands.onCommand.addListener(async (command) => {
+//     console.log(`Command "${command}" triggered`);
+//     if (command === "toggle_active") {
+//         chrome.storage.local.get(["badgeState"]).then((result) => {
+//             console.log("badge state is: " + result.badgeState);
+//             var initialBadgeState = result.badgeState;
+//             if (typeof initialBadgeState === "undefined") {
+//                 initialBadgeState = "OFF";
+//             }
 
-        if (initialBadgeState === 'ON') {
-            console.log("next state is OFF");
-            chrome.action.setBadgeText({ text: "OFF" });
-            chrome.storage.local.set({ badgeState: "OFF" });
-            toggleDisplay("OFF");
-        } else if (initialBadgeState === 'OFF') {
-            console.log("next state is ON");
-            chrome.action.setBadgeText({ text: "ON" });
-            chrome.storage.local.set({ badgeState: "ON" });
-            toggleDisplay("ON");
+//             if (initialBadgeState === 'ON') {
+//                 console.log("next state is OFF");
+//                 chrome.action.setBadgeText({ text: "OFF" });
+//                 chrome.storage.local.set({ badgeState: "OFF" });
+//                 toggleDisplay("OFF");
+//             } else if (initialBadgeState === 'OFF') {
+//                 console.log("next state is ON");
+//                 chrome.action.setBadgeText({ text: "ON" });
+//                 chrome.storage.local.set({ badgeState: "ON" });
+//                 toggleDisplay("ON");
+//             }
+//         })
+//         chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+//             chrome.tabs.reload(tabs[0].id);
+//         });
+//     }
+// });
+
+const checkBadge = async () => {
+    var checkAlt = false;
+    var checkEA = false;
+    await chrome.storage.local.get(["toggleValueAlt"]).then((result) => {
+        const storedValue = result["toggleValueAlt"];
+        console.log("checkBadge alt currently is ", storedValue);
+
+        if (typeof storedValue == "undefined") {
+            console.log("checkAlt set to false");
+            checkAlt = false;
+        } else {
+            console.log("checkAlt set to sv: " + storedValue);
+            checkAlt = storedValue;
         }
-    })
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-        chrome.tabs.reload(tabs[0].id);
     });
-});
+    await chrome.storage.local.get(["toggleEasyLanguage"]).then((result) => {
+        const storedValue = result["toggleEasyLanguage"];
+        console.log("checkBadge ea currently is ", storedValue);
 
-chrome.commands.onCommand.addListener(async (command) => {
-    console.log(`Command "${command}" triggered`);
-    if (command === "toggle_active") {
-        chrome.storage.local.get(["badgeState"]).then((result) => {
-            console.log("badge state is: " + result.badgeState);
-            var initialBadgeState = result.badgeState;
-            if (typeof initialBadgeState === "undefined") {
-                initialBadgeState = "OFF";
-            }
+        if (typeof storedValue == "undefined") {
+            console.log("checkEA set to false");
+            checkEA = false;
+        } else {
+            console.log("checkEA set to sv: " + storedValue);
+            checkEA = storedValue;
+        }
+    });
 
-            if (initialBadgeState === 'ON') {
-                console.log("next state is OFF");
-                chrome.action.setBadgeText({ text: "OFF" });
-                chrome.storage.local.set({ badgeState: "OFF" });
-                toggleDisplay("OFF");
-            } else if (initialBadgeState === 'OFF') {
-                console.log("next state is ON");
-                chrome.action.setBadgeText({ text: "ON" });
-                chrome.storage.local.set({ badgeState: "ON" });
-                toggleDisplay("ON");
-            }
-        })
-        chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-            chrome.tabs.reload(tabs[0].id);
-        });
+    if (checkAlt || checkEA) {
+        chrome.action.setBadgeText({ text: "ON" });
+    } else {
+        chrome.action.setBadgeText({ text: "OFF" });
     }
-});
-
-// Toggeln der display-Variable
-const toggleDisplay = (currentState) => {
-    display = currentState === 'ON';
-    console.log("Display set to:", display);
 };
 
 // Funktion, die einen Alt-Text generieren lässt oder 
@@ -155,22 +151,101 @@ const generateLeichteSprache = async (message, sendResponse) => {
     }
 };
 
+const getInitialValues = async (sendResponse) => {
+    var resultInitialAltText = false;
+    var resultInitialEasyLanguage = false;
+
+    await chrome.storage.local.get(["toggleValueAlt"]).then((result) => {
+        console.log(JSON.stringify(result));
+        const storedValue = result["toggleValueAlt"];
+        console.log("Value currently is ", storedValue);
+
+        if (typeof storedValue == "undefined") {
+            console.log("resultInitialAltText set to false");
+            resultInitialAltText = false;
+        } else {
+            resultInitialAltText = storedValue;
+        }
+    });
+    await chrome.storage.local.get(["toggleEasyLanguage"]).then((result) => {
+        console.log(JSON.stringify(result));
+        const storedValue = result["toggleEasyLanguage"];
+        console.log("Value currently is ", storedValue);
+
+        if (typeof storedValue == "undefined") {
+            console.log("resultInitialEasyLanguage set to false");
+            resultInitialEasyLanguage = false;
+        } else {
+            resultInitialEasyLanguage = storedValue;
+        }
+    });
+
+    sendResponse({ initialAltText: resultInitialAltText, initialEasyLanguage: resultInitialEasyLanguage })
+    return true;
+};
+
+const updateToggleAltText = async (message, sendResponse) => {
+    if (typeof message.toggleValueAlt !== "undefined") {
+        const updatedToggleValueAlt = !message.toggleValueAlt;
+        console.log("Updated toggle alt value from " + message.toggleValueAlt + " to " + updatedToggleValueAlt);
+        await chrome.storage.local.set({ ["toggleValueAlt"]: updatedToggleValueAlt }).then(() => {
+            console.log("Updated toggle value alt text chrome local storage");
+        });
+        chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+            chrome.tabs.reload(tabs[0].id);
+        });
+        sendResponse({ toggleValueAlt: updatedToggleValueAlt });
+        return true;
+    } else {
+        console.log("Undefined toggleValueAlt");
+    }
+};
+const updateToggleEasyLanguage = async (message, sendResponse) => {
+    if (typeof message.toggleEasyLanguage !== "undefined") {
+        const updatedToggleValueEasyLanguagge = !message.toggleEasyLanguage;
+        console.log("Updated toggle alt value from " + message.toggleEasyLanguage + " to " + updatedToggleValueEasyLanguagge);
+        await chrome.storage.local.set({ ["toggleEasyLanguage"]: updatedToggleValueEasyLanguagge }).then(() => {
+            console.log("Updated toggle value easy language chrome local storage");
+        });
+        chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+            chrome.tabs.reload(tabs[0].id);
+        });
+        sendResponse({ toggleEasyLanguage: updatedToggleValueEasyLanguagge });
+        return true;
+    } else {
+        console.log("Undefined toggleEasyLanguage");
+    }
+};
+
 // Reagiert auf die Message vom Content Skript
 chrome.runtime.onMessage.addListener(
     function (message, sender, sendResponse) {
-        if (display) {
-            console.log("executing add listener")
-            if (message.greeting === 'alt') {
-                console.log("Im background worker: " + message.imgUrl);
-                generateAltText(message, sendResponse);
-                return true;
-            } else if (message.greeting === 'leichteSprache') {
-                console.log("Im background worker: " + message.pText);
-                generateLeichteSprache(message, sendResponse);
-                return true;
-            }
-        } else {
-            console.log("not executing add listener")
+
+        if (message.greeting === 'alt') {
+            console.log("Im background worker: " + message.imgUrl);
+            generateAltText(message, sendResponse);
+            return true;
+        } else if (message.greeting === 'leichteSprache') {
+            console.log("Im background worker: " + message.pText);
+            generateLeichteSprache(message, sendResponse);
+            return true;
+        } else if (message.greeting === 'getInitialValues') {
+            console.log("Im background worker: get initial values");
+            getInitialValues(sendResponse);
+            checkBadge();
+            return true;
+        }
+        else if (message.greeting === 'toggleAltText') {
+            console.log("Im background worker: " + message.toggleValueAlt);
+            updateToggleAltText(message, sendResponse);
+            checkBadge();
+            return true;
+        }
+        else if (message.greeting === 'toggleEasyLanguage') {
+            console.log("Im background worker: " + message.toggleEasyLanguage);
+            updateToggleEasyLanguage(message, sendResponse);
+            checkBadge();
+            return true;
         }
     }
 );

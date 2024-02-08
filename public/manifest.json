@@ -12,9 +12,9 @@
     "type": "module"
   },
   "action": {
+    "default_popup": "index.html",
     "default_icon": {
-      "192": "logo192.png",
-      "512": "logo512.png"
+      "600": "font-are-awesome-universal-accessibility.png"
     }
   },
   "permissions": ["activeTab", "scripting", "storage"],
@@ -33,8 +33,7 @@
       "js": ["content.js"],
       "css": ["content.css"],
       "matches": [
-        "https://www.f4.htw-berlin.de/*",
-        "https://developer.chrome.com/docs/extensions/*"
+        "<all_urls>"
       ]
     }
   ],
