@@ -1,16 +1,13 @@
 #popup-window {
-  width: 250px;
-  height: 300px;
+  width: 400px;
+  height: 500px;
+  display: flex;
   justify-content: center;
   align-items: center;
-  display: flex;
   flex-direction: column;
 }
 
-#popup-formgroup {
-  margin-bottom: 50px;
-}
-
-#popup-text span {
-  font-weight: bold;
+#popup-window img {
+  width: 150px;
+  height: 150px;
 }
