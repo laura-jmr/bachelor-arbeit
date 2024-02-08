@@ -1,7 +1,8 @@
+/*global chrome*/
 var toggleAltText = false;
 var toggleLeichteSprache = false;
 
-const initializeToggles = async () => {
+export const initializeToggles = async () => {
     await chrome.storage.local.get(["toggleValueAlt"]).then((result) => {
         const storedValue = result["toggleValueAlt"];
         console.log("toggleValueAlt alt currently is ", storedValue);
@@ -70,7 +71,7 @@ const initializeToggles = async () => {
 //     }
 // })();
 
-function createDomElement(html) {
+export function createDomElement(html) {
     const dom = new DOMParser().parseFromString(html, 'text/html');
     return dom.body.firstElementChild;
 }
@@ -102,7 +103,7 @@ function createDomElement(html) {
 //     }
 // })();
 
-async function executeAltText() {
+export async function executeAltText() {
     if (toggleAltText) {
         console.log("im Content skript: executing alt text");
         const images = document.querySelectorAll("img");
@@ -133,7 +134,7 @@ async function executeAltText() {
     }
 }
 
-async function executeLeichteSprache () {
+export async function executeLeichteSprache () {
     if (toggleLeichteSprache) {
         console.log("im Content skript: executing leichte sprache");
         const pDoms = document.querySelectorAll('p');
@@ -154,7 +155,7 @@ async function executeLeichteSprache () {
 }
 
 // Function to extract text content from an element
-function extractTextContent(elements) {
+export function extractTextContent(elements) {
     const sectionContents = [];
     let currentSection = {};
 
