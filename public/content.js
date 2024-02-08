@@ -75,37 +75,9 @@ function createDomElement(html) {
     return dom.body.firstElementChild;
 }
 
-(async () => {
-    const bodyDom = document.querySelector('body');
-    console.log(bodyDom);
-
-    const elementsInBody = Array.from(bodyDom.querySelectorAll('h1, h2, h3, p, span'));
-    const result = groupElementsBySection(elementsInBody);
-    console.log(result);
-    // const pDoms = document.querySelectorAll('p');
-    // console.log(pDoms);
-
-    // pDoms.forEach(async paragraph => {
-    //     const response = await chrome.runtime.sendMessage({ greeting: 'leichteSprache', pText: paragraph.textContent });
-    //     console.log(response);
-    //     console.log(response.leichteSprache);
-    //     const transformedResponse = response.leichteSprache.replace(/[.!?]/g, match => match + '<br><br>').trim();
-    //     console.log(transformedResponse);
-    //     paragraph.innerHTML = transformedResponse;
-    //     paragraph.classList.add("leichte-sprache");
-    // });
-
-    result.forEach(async section => {
-        const response = await chrome.runtime.sendMessage({ greeting: 'leichteSprache', section: section });
-        console.log(response);
-        console.log(response.leichteSprache);
-        const resArray = response.leichteSprache.elements;
-        resArray.forEach(domElement => {
-            domElement.innerHTML = domElement.innerText;
-            domElement.classList.add("leichte-sprache");
-        });
-    });
-})();
+// (async () => {
+//     // const mainDom = document.querySelector('main');
+//     // console.log(mainDom);
 
 //     // const elementsInMain = Array.from(mainDom.querySelectorAll('h1, h2, h3, p, span'));
 //     // const result = extractTextContent(elementsInMain);
@@ -183,58 +155,34 @@ async function executeLeichteSprache () {
 
 // Function to extract text content from an element
 function extractTextContent(elements) {
-    const sections = [];
+    const sectionContents = [];
     let currentSection = {};
 
     elements.forEach(element => {
         const tagName = element.tagName.toLowerCase();
         if (tagName === 'h1' || tagName === 'h2' || tagName === 'h3') {
+            // If new heading found, push current section content and start a new section
             if (Object.keys(currentSection).length !== 0) {
-                sections.push(currentSection);
+                sectionContents.push(currentSection);
             }
             currentSection = {
-                htmlElement: element,
-                content: {
-                    h1: tagName === 'h1' ? element.innerHTML.trim() : '',
-                    h2: tagName === 'h2' ? element.innerHTML.trim() : '',
-                    h3: tagName === 'h3' ? element.innerHTML.trim() : '',
-                    p: ''
-                }
+                h1: tagName === 'h1' ? element.textContent.trim() : '',
+                h2: tagName === 'h2' ? element.textContent.trim() : '',
+                h3: tagName === 'h3' ? element.textContent.trim() : '',
+                p: ''
             };
         } else if (tagName === 'p' || tagName === 'span') {
-            currentSection.content.p += ' ' + element.innerHTML.trim();
-        }
-    });
-
-    if (Object.keys(currentSection).length !== 0) {
-        sections.push(currentSection);
-    }
-
-    return sections;
-}
-
-function groupElementsBySection(elements) {
-    const groupedSections = [];
-    let currentSection = { elements: [] };
-
-    elements.forEach(element => {
-        const tagName = element.tagName.toLowerCase();
-        if (tagName === 'h1' || tagName === 'h2' || tagName === 'h3' || tagName === 'p' || tagName === 'span') {
-            // If new heading or paragraph found, push current section and start a new one
-            if (currentSection.elements.length > 0 && (tagName == 'h1' || tagName == 'h2' || tagName == 'h3')) {
-                groupedSections.push(currentSection);
-                currentSection = { elements: [] };
-            }
-            currentSection.elements.push(element);
+            // Append text content to the current section's p attribute
+            currentSection.p += ' ' + element.textContent.trim();
         }
     });
 
     // Push the last section if it exists
-    if (currentSection.elements.length > 0) {
-        groupedSections.push(currentSection);
+    if (Object.keys(currentSection).length !== 0) {
+        sectionContents.push(currentSection);
     }
 
-    return groupedSections;
+    return sectionContents;
 }
 
 initializeToggles().then(() => {

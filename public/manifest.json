@@ -17,11 +17,7 @@
       "600": "font-are-awesome-universal-accessibility.png"
     }
   },
-  "permissions": [
-    "activeTab",
-    "scripting",
-    "storage"
-  ],
+  "permissions": ["activeTab", "scripting", "storage"],
   "commands": {
     "toggle_active": {
       "suggested_key": {
@@ -31,17 +27,11 @@
       "description": "Toggle the extension via keyboard."
     }
   },
-  "host_permissions": [
-    "<all_urls>"
-  ],
+  "host_permissions": ["<all_urls>"],
   "content_scripts": [
     {
-      "js": [
-        "content.js"
-      ],
-      "css": [
-        "content.css"
-      ],
+      "js": ["content.js"],
+      "css": ["content.css"],
       "matches": [
         "<all_urls>"
       ]

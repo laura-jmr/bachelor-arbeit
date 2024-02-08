@@ -113,49 +113,23 @@ const generateAltText = async (message, sendResponse) => {
 };
 
 const generateLeichteSprache = async (message, sendResponse) => {
-    if (typeof message.section !== "undefined") {
+    if (typeof message.pText !== "undefined") {
         // Entkommentieren, um Local Storage zu resetten
 
-        await chrome.storage.local.clear(function() {
-            var error = chrome.runtime.lastError;
-            if (error) {
-                console.error(error);
-            }
-            console.log("cleared")
-        });
-
-
-        // await chrome.storage.local.get(["" + message.pText]).then((result) => {
-        //     console.log(JSON.stringify(result));
-        //     const storedValue = result[message.pText];
-        //     console.log("Value currently is ", storedValue);
-
-        //     if (typeof storedValue == "undefined") {
-        //         getLeichteSprache(message.pText)
-        //             .then(res => {
-        //                 console.log("IN GENLEICHTE SPRACHE: " + res);
-        //                 sendResponse({ leichteSprache: res });
-        //                 return true;
-        //             })
-        //             .catch(error => {
-        //                 console.error('Error occurred:', error);
-        //                 sendResponse({ error: error.message });
-        //                 return true;
-        //             });
-        //     } else {
-        //         console.log(storedValue);
-        //         sendResponse({ leichteSprache: storedValue });
-        //         return true;
+        // await chrome.storage.local.clear(function() {
+        //     var error = chrome.runtime.lastError;
+        //     if (error) {
+        //         console.error(error);
         //     }
+        //     console.log("cleared")
         // });
-
-        chrome.storage.local.get(["" + message.section]).then((result) => {
+        await chrome.storage.local.get(["" + message.pText]).then((result) => {
             console.log(JSON.stringify(result));
-            const storedValue = result[message.section];
+            const storedValue = result[message.pText];
             console.log("Value currently is ", storedValue);
 
             if (typeof storedValue == "undefined") {
-                getLeichteSprache(message.section)
+                getLeichteSprache(message.pText)
                     .then(res => {
                         console.log("IN GENLEICHTE SPRACHE: " + res);
                         sendResponse({ leichteSprache: res });
@@ -326,67 +300,8 @@ async function getGPT(tags, imageUrl) {
 async function getLeichteSprache(pText) {
     const apiUrl = 'https://api.openai.com/v1/chat/completions';
     const apiKey = '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';
-    // const user_prompt = `Überarbeite den folgenden Text entsprechend der Richtlinien für "Leichte Sprache": ${pText}`;
-    const user_prompt = `Ich schicke dir ein JSON Element, welches HTML Elemente im Attribut "elements" enthält. Die Elemente sind sortiert nach Überschrift und entsprechenden Text zu der Überschrift. Es kann sein, dass ein Text keine Überschrift hat. Dies erkennst du an dem Tag des HTML-Objektes. Wandle den Text-Inhalt der HTML Elemente in Leichte Sprache um und achte dabei auf den semantischen Kontext: ${JSON.stringify(pText)}`;
-    // const system_prompt = "Your answer fullfills the guidelines for 'Leichte Sprache'. You extract the main information of the text and display them in a very comprehensible form. You only use independent clauses without commas.";
-    const leichteSpracheRegeln = {
-        'Wörter':
-            [
-                "Benutzen Sie einfache Wörter.",
-                "Benutzen Sie Wörter, die etwas genau beschreiben.",
-                "Benutzen Sie bekannte Wörter.",
-                "Verzichten Sie auf Fach-Wörter und Fremd-Wörter.",
-                "Benutzen Sie immer die gleichen Wörter für die gleichen Dinge.",
-                "Benutzen Sie kurze Wörter.",
-                "Verzichten Sie auf Abkürzungen.",
-                "Benutzen Sie Verben.",
-                "Benutzen Sie aktive Wörter.",
-                "Vermeiden Sie den Genitiv.",
-                "Vermeiden Sie den Konjunktiv.",
-                "Benutzen Sie positive Sprache.",
-                "Vermeiden Sie Rede-Wendungen und bildliche Sprache."
-            ],
-        'Zahlen und Zeichen':
-            [
-                "Schreiben Sie Zahlen so, wie die meisten Menschen sie kennen.",
-                "Vermeiden Sie alte Jahres-Zahlen.",
-                "Vermeiden Sie hohe Zahlen und Prozent-Zahlen.",
-                "Meistens sind Ziffern einfacher als Worte.",
-                "Schreiben Sie Telefon-Nummern mit Leer-Zeichen.",
-                "Vermeiden Sie Sonder-Zeichen.",
-                "Wenn Sie ein Sonder-Zeichen benutzen müssen: Dann erklären sie das Zeichen."
-            ],
-        'Sätze':
-            [
-                "Schreiben Sie kurze Sätze.",
-                "Machen Sie in jedem Satz nur eine Aussage.",
-                "Benutzen Sie einen einfachen Satz-Bau.",
-                "Am Anfang vom Satz dürfen auch diese Worte stehen: Aber, Oder, Wenn, Weil, Und."
-            ],
-        'Texte':
-            [
-                "Sprechen Sie die Leser und Leserinnen persönlich an.",
-                "Benutzen Sie die Anrede Sie.",
-                "Vermeiden Sie Fragen im Text.",
-                "Schreiben Sie alles zusammen, was zusammen gehört.",
-                "Vermeiden Sie Verweise",
-                "Sie dürfen einen Text beim Schreiben in Leichter Sprache verändern.",
-                "Sie dürfen Dinge erklären.",
-                "Sie dürfen Hinweise geben.",
-                "Sie dürfen Beispiele schreiben.",
-                "Sie dürfen die Reihen-Folge ändern.",
-                "Sie dürfen Teile vom Textes weglassen, wenn diese Teile nicht wichtig sind."
-            ],
-        'Gestaltung und Bilder':
-            [
-                "Schreiben Sie jeden neuen Satz in eine neue Zeile.",
-                "Trennen Sie keine Wörter am Ende einer Zeile.",
-                "Machen Sie viele Absätze und Überschriften.",
-                "Schreiben Sie eine Adresse so wie auf einem Brief."
-            ]
-    }
-    // const system_prompt = `Du antwortest nur mit dem überarbeitetem Text. Deine Antwort entspricht den folgenden Regeln für Leichte Sprache: ${leichteSpracheRegeln}`;
-    const system_prompt = `Du antwortest nur mit dem geänderten JSON. Du darfst nur die Werte im Textinhalt ändern. Deine Antwort entspricht den folgenden Regeln für Leichte Sprache: ${leichteSpracheRegeln}`;
+    const user_prompt = `Convert the following text to fullfill the guidelines for "Leichte Sprache": ${pText}`;
+    const system_prompt = "Your answer fullfills the guidelines for 'Leichte Sprache'. You extract the main information of the text and display them in a very comprehensible form. You only use independent clauses without commas.";
 
     console.log("prompt for chatgpt: " + user_prompt);
     try {
