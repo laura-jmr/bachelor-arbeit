@@ -8,44 +8,27 @@ var toggleLeichteSprache = false;
 const initializeToggles = async () => {
     await chrome.storage.local.get(["toggleValueAlt"]).then((result) => {
         const storedValue = result["toggleValueAlt"];
-        console.log("toggleValueAlt alt currently is ", storedValue);
+        console.log("CS init: toggleValueAlt is ", storedValue);
 
         if (typeof storedValue == "undefined") {
-            console.log("toggleAltText set to false");
+            console.log("CS init: toggleAltText set to false");
             toggleAltText = false;
         } else {
-            console.log("toggleAltText set to sv: " + storedValue);
             toggleAltText = storedValue;
         }
     });
     await chrome.storage.local.get(["toggleEasyLanguage"]).then((result) => {
         const storedValue = result["toggleEasyLanguage"];
-        console.log("toggleEasyLanguage ea currently is ", storedValue);
+        console.log("CS init: toggleEasyLanguage is ", storedValue);
 
         if (typeof storedValue == "undefined") {
-            console.log("toggleLeichteSprache set to false");
+            console.log("CS init: toggleLeichteSprache set to false");
             toggleLeichteSprache = false;
         } else {
-            console.log("toggleLeichteSprache set to sv: " + storedValue);
             toggleLeichteSprache = storedValue;
         }
     });
 };
-
-// const websites = document.querySelectorAll("div.website");
-// const resultArray = [];
-
-// websites.forEach(website => {
-//     const a = website.firstChild;
-//     const websiteInfo = {
-//         href: a.href,
-//         textContent: a.textContent.trim()
-//     };
-//     resultArray.push(websiteInfo);
-// });
-
-// const outputString = JSON.stringify(resultArray);
-// console.log(outputString);
 
 // // Filtert alle Bilder auf der Webseite heraus, extrahiert die Sources und lässt den Service-Worker einen Alt-Text
 // // generieren, der dann unter dem Bild angezeigt wird
@@ -113,9 +96,9 @@ function createDomElement(html) {
 // Macht aus dem Ergebnis ein <p>-DOM-Element und fügt es unter dem jew. Bild ein
 async function executeAltText() {
     if (toggleAltText) {
-        console.log("im Content skript: executing alt text");
+        console.log("CS executeAltText");
         const images = document.querySelectorAll("img");
-        console.log(images);
+        console.log("CS executeAltText: " + images);
 
         images.forEach(async img => {
             var iUrl;
@@ -125,15 +108,15 @@ async function executeAltText() {
                 iUrl = img.src;
             }
             const response = await chrome.runtime.sendMessage({ greeting: 'alt', imgUrl: iUrl });
-            console.log(response.alt);
+            console.log("CS executeAltText: SV responde: " + response.alt.slice(1,-1));
             const altText = createDomElement(`
-                <p class="generated-alt-text">${response.alt}</p>
+                <p class="generated-alt-text">${response.alt.slice(1,-1)}</p>
             `);
             img.parentNode.insertBefore(altText, img.nextSibling);
         });
 
     } else {
-        console.log("im Content skript: not executing alt text");
+        console.log("CS executeAltText: not executing");
     }
 }
 
@@ -143,21 +126,20 @@ async function executeAltText() {
 // Aufarbeitung des Ergebnisses und Überschreibung des alten Textes mit dem Neuen
 async function executeLeichteSprache () {
     if (toggleLeichteSprache) {
-        console.log("im Content skript: executing leichte sprache");
+        console.log("CS executeLeichteSprache");
         const pDoms = document.querySelectorAll('p');
-        console.log(pDoms);
+        console.log("CS executeLeichteSprache: " + pDoms);
 
         pDoms.forEach(async paragraph => {
             const response = await chrome.runtime.sendMessage({ greeting: 'leichteSprache', pText: paragraph.textContent });
-            console.log(response);
-            console.log(response.leichteSprache);
+            console.log("CS executeLeichteSprache: SV response: " + response.leichteSprache);
             const transformedResponse = response.leichteSprache.replace(/[.!?]/g, match => match + '<br><br>').trim();
-            console.log(transformedResponse);
+            console.log("CS executeLeichteSprache: transformed response: " + transformedResponse);
             paragraph.innerHTML = transformedResponse;
             paragraph.classList.add("leichte-sprache");
         });
     } else {
-        console.log("im Content skript: not executing leichte sprache");
+        console.log("CS executeLeichteSprache: not executing");
     }
 }
 
@@ -165,6 +147,7 @@ async function executeLeichteSprache () {
 // Verbindet Überschriften mit jeweiligen darunterstehenden Paragraphen
 // Wird genutzt, um Kontext miteinzubeziehen in die Übersetzung
 function extractTextContent(elements) {
+    console.log("CS extractTextContent");
     const sectionContents = [];
     let currentSection = {};
 

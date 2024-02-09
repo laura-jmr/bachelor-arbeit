@@ -40,25 +40,19 @@ const checkBadge = async () => {
     var checkEA = false;
     await chrome.storage.local.get(["toggleValueAlt"]).then((result) => {
         const storedValue = result["toggleValueAlt"];
-        console.log("checkBadge alt currently is ", storedValue);
 
         if (typeof storedValue == "undefined") {
-            console.log("checkAlt set to false");
             checkAlt = false;
         } else {
-            console.log("checkAlt set to sv: " + storedValue);
             checkAlt = storedValue;
         }
     });
     await chrome.storage.local.get(["toggleEasyLanguage"]).then((result) => {
         const storedValue = result["toggleEasyLanguage"];
-        console.log("checkBadge ea currently is ", storedValue);
 
         if (typeof storedValue == "undefined") {
-            console.log("checkEA set to false");
             checkEA = false;
         } else {
-            console.log("checkEA set to sv: " + storedValue);
             checkEA = storedValue;
         }
     });
@@ -73,6 +67,7 @@ const checkBadge = async () => {
 // Funktion, die einen Alt-Text generieren lässt oder 
 // einen bereits erstellten Alt-Text aus dem Local Storage läd und an das Content Skript zurückschickt
 const generateAltText = async (message, sendResponse) => {
+    console.log("SV generateAltText");
     if (typeof message.imgUrl !== "undefined") {
         // Entkommentieren, um Local Storage zu resetten
 
@@ -84,25 +79,23 @@ const generateAltText = async (message, sendResponse) => {
         //     console.log("cleared")
         // });
         await chrome.storage.local.get(["" + message.imgUrl]).then((result) => {
-            console.log(JSON.stringify(result));
             const storedValue = result[message.imgUrl];
-            console.log("Value currently is ", storedValue);
+            console.log("SV generateAltText: storedValue for " + message.imgUrl + " is " + storedValue);
 
             if (typeof storedValue == "undefined") {
                 getAlt(message.imgUrl)
                     .then(tags => getGPT(tags, message.imgUrl))
                     .then(alt => {
-                        console.log(alt);
+                        console.log("SV generateAltText: generated alt text is " + alt);
                         sendResponse({ alt: alt });
                         return true;
                     })
                     .catch(error => {
-                        console.error('Error occurred:', error);
+                        console.error('SV generateAltText: Error occurred:', error);
                         sendResponse({ error: error.message });
                         return true;
                     });
             } else {
-                console.log(storedValue);
                 sendResponse({ alt: storedValue });
                 return true;
             }
@@ -113,41 +106,40 @@ const generateAltText = async (message, sendResponse) => {
 };
 
 const generateLeichteSprache = async (message, sendResponse) => {
+    console.log("SV generateLeichteSprache");
     if (typeof message.pText !== "undefined") {
         // Entkommentieren, um Local Storage zu resetten
 
-        // await chrome.storage.local.clear(function() {
-        //     var error = chrome.runtime.lastError;
-        //     if (error) {
-        //         console.error(error);
-        //     }
-        //     console.log("cleared")
-        // });
+        await chrome.storage.local.clear(function() {
+            var error = chrome.runtime.lastError;
+            if (error) {
+                console.error(error);
+            }
+            console.log("cleared")
+        });
         await chrome.storage.local.get(["" + message.pText]).then((result) => {
-            console.log(JSON.stringify(result));
             const storedValue = result[message.pText];
-            console.log("Value currently is ", storedValue);
+            console.log("SV generateLeichteSprache: storedValue for " + message.pText + " is " + storedValue);
 
             if (typeof storedValue == "undefined") {
                 getLeichteSprache(message.pText)
                     .then(res => {
-                        console.log("IN GENLEICHTE SPRACHE: " + res);
+                        console.log("SV generateLeichteSprache: result " + res);
                         sendResponse({ leichteSprache: res });
                         return true;
                     })
                     .catch(error => {
-                        console.error('Error occurred:', error);
+                        console.error('SV generateLeichteSprache: Error occurred:', error);
                         sendResponse({ error: error.message });
                         return true;
                     });
             } else {
-                console.log(storedValue);
                 sendResponse({ leichteSprache: storedValue });
                 return true;
             }
         });
     } else {
-        console.log("Undefined pText")
+        console.log("'SV generateLeichteSprache: Undefined pText")
     }
 };
 
@@ -156,24 +148,18 @@ const getInitialValues = async (sendResponse) => {
     var resultInitialEasyLanguage = false;
 
     await chrome.storage.local.get(["toggleValueAlt"]).then((result) => {
-        console.log(JSON.stringify(result));
         const storedValue = result["toggleValueAlt"];
-        console.log("Value currently is ", storedValue);
 
         if (typeof storedValue == "undefined") {
-            console.log("resultInitialAltText set to false");
             resultInitialAltText = false;
         } else {
             resultInitialAltText = storedValue;
         }
     });
     await chrome.storage.local.get(["toggleEasyLanguage"]).then((result) => {
-        console.log(JSON.stringify(result));
         const storedValue = result["toggleEasyLanguage"];
-        console.log("Value currently is ", storedValue);
 
         if (typeof storedValue == "undefined") {
-            console.log("resultInitialEasyLanguage set to false");
             resultInitialEasyLanguage = false;
         } else {
             resultInitialEasyLanguage = storedValue;
@@ -187,34 +173,29 @@ const getInitialValues = async (sendResponse) => {
 const updateToggleAltText = async (message, sendResponse) => {
     if (typeof message.toggleValueAlt !== "undefined") {
         const updatedToggleValueAlt = !message.toggleValueAlt;
-        console.log("Updated toggle alt value from " + message.toggleValueAlt + " to " + updatedToggleValueAlt);
         await chrome.storage.local.set({ ["toggleValueAlt"]: updatedToggleValueAlt }).then(() => {
-            console.log("Updated toggle value alt text chrome local storage");
+            console.log("SV updateToggleAltText: Updated");
         });
         chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
             chrome.tabs.reload(tabs[0].id);
         });
         sendResponse({ toggleValueAlt: updatedToggleValueAlt });
         return true;
-    } else {
-        console.log("Undefined toggleValueAlt");
-    }
+    } 
 };
+
 const updateToggleEasyLanguage = async (message, sendResponse) => {
     if (typeof message.toggleEasyLanguage !== "undefined") {
         const updatedToggleValueEasyLanguagge = !message.toggleEasyLanguage;
-        console.log("Updated toggle alt value from " + message.toggleEasyLanguage + " to " + updatedToggleValueEasyLanguagge);
         await chrome.storage.local.set({ ["toggleEasyLanguage"]: updatedToggleValueEasyLanguagge }).then(() => {
-            console.log("Updated toggle value easy language chrome local storage");
+            console.log("SV updateToggleEasyLanguage: Updated");
         });
         chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
             chrome.tabs.reload(tabs[0].id);
         });
         sendResponse({ toggleEasyLanguage: updatedToggleValueEasyLanguagge });
         return true;
-    } else {
-        console.log("Undefined toggleEasyLanguage");
-    }
+    } 
 };
 
 // Reagiert auf die Message vom Content Skript
@@ -222,27 +203,27 @@ chrome.runtime.onMessage.addListener(
     function (message, sender, sendResponse) {
 
         if (message.greeting === 'alt') {
-            console.log("Im background worker: " + message.imgUrl);
+            console.log("SV message income: alt " + message.imgUrl);
             generateAltText(message, sendResponse);
             return true;
         } else if (message.greeting === 'leichteSprache') {
-            console.log("Im background worker: " + message.pText);
+            console.log("SV message income: leichte sprache " + message.pText);
             generateLeichteSprache(message, sendResponse);
             return true;
         } else if (message.greeting === 'getInitialValues') {
-            console.log("Im background worker: get initial values");
+            console.log("SV message income: init ");
             getInitialValues(sendResponse);
             checkBadge();
             return true;
         }
         else if (message.greeting === 'toggleAltText') {
-            console.log("Im background worker: " + message.toggleValueAlt);
+            console.log("SV message income: toggle alt " + message.toggleValueAlt);
             updateToggleAltText(message, sendResponse);
             checkBadge();
             return true;
         }
         else if (message.greeting === 'toggleEasyLanguage') {
-            console.log("Im background worker: " + message.toggleEasyLanguage);
+            console.log("SV message income: toggle leichte sprache " + message.toggleEasyLanguage);
             updateToggleEasyLanguage(message, sendResponse);
             checkBadge();
             return true;
@@ -259,7 +240,7 @@ async function getGPT(tags, imageUrl) {
     const user_prompt = `Write me an ALT text for an image with the following tag-list which are image classification tags with confidences: ${JSON.stringify(tags)}`;
     const system_prompt = "You answer in a single short sentence that describes the image best.";
 
-    console.log("prompt for chatgpt: " + user_prompt);
+    console.log("SV getGPT: user prompt" + user_prompt);
     try {
         const response = await fetch(apiUrl, {
             method: 'POST',
@@ -284,15 +265,14 @@ async function getGPT(tags, imageUrl) {
         }
 
         const altResponse = await response.json();
-        console.log("Alt: ", altResponse);
         const contentResponse = altResponse.choices[0].message.content;
-        console.log(contentResponse);
+        console.log("SV getGPT: response " + contentResponse);
         await chrome.storage.local.set({ [imageUrl]: JSON.stringify(contentResponse) }).then(() => {
-            console.log("Set filtered taglist for " + imageUrl + " to chrome local storage");
+            console.log("SV getGPT: updated " + imageUrl + " to chrome local storage");
         });
         return contentResponse;
     } catch (error) {
-        console.error('Error in getGPT:', error);
+        console.error('SV getGPT: Error', error);
         throw error;
     }
 }
@@ -303,7 +283,7 @@ async function getLeichteSprache(pText) {
     const user_prompt = `Convert the following text to fullfill the guidelines for "Leichte Sprache": ${pText}`;
     const system_prompt = "Your answer fullfills the guidelines for 'Leichte Sprache'. You extract the main information of the text and display them in a very comprehensible form. You only use independent clauses without commas.";
 
-    console.log("prompt for chatgpt: " + user_prompt);
+    console.log("SV getLeichteSprache: user prompt" + user_prompt);
     try {
         const response = await fetch(apiUrl, {
             method: 'POST',
@@ -331,11 +311,11 @@ async function getLeichteSprache(pText) {
         const contentResponse = responseJson.choices[0].message.content;
         console.log(contentResponse);
         await chrome.storage.local.set({ [pText]: JSON.stringify(contentResponse) }).then(() => {
-            console.log("Set leichte sprache to chrome local storage");
+            console.log("SV getLeichteSprache: updated " + pText + " to chrome local storage");
         });
         return contentResponse;
     } catch (error) {
-        console.error('Error in getGPT:', error);
+        console.error('SV getLeichteSprache: Error', error);
         throw error;
     }
 }
@@ -371,9 +351,10 @@ async function getAlt(imageUrl) {
                 tag: entry.tag.en
             };
         });
+        console.log("SV getAlt: result " + transformedTags);
         return JSON.stringify(transformedTags);
     } catch (error) {
-        console.error('There was a problem with the fetch operation:', error);
+        console.error("SV getAlt: error for " + imageUrl+ " " + error);
         throw error;
     }
 }
