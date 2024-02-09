@@ -134,7 +134,6 @@ async function executeLeichteSprache () {
             const response = await chrome.runtime.sendMessage({ greeting: 'leichteSprache', pText: paragraph.textContent });
             console.log("CS executeLeichteSprache: SV response: " + response.leichteSprache);
             const transformedResponse = response.leichteSprache.replace(/[.!?]/g, match => match + '<br><br>').trim();
-            console.log("CS executeLeichteSprache: transformed response: " + transformedResponse);
             paragraph.innerHTML = transformedResponse;
             paragraph.classList.add("leichte-sprache");
         });

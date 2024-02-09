@@ -22,6 +22,7 @@ function App() {
   useEffect(() => {
     // Fetcht initale Werte der Toggles aus dem lokalen Speicher von Chrome
     chrome.runtime.sendMessage({ greeting: 'getInitialValues' }, (response) => {
+      console.log("App.js getInitialValues: alt is " + response.initialAltText + " leichte sprache is " + response.initialEasyLanguage)
       setAlternativeText(response.initialAltText);
       setEasyLanguage(response.initialEasyLanguage);
     });
@@ -32,8 +33,8 @@ function App() {
   // Schickt eine Nachricht an den Service-Worker mit neuem Toggle-Wert
   const sendMessageToBackgroundEasyLanguage = async () => {
     const response = await chrome.runtime.sendMessage({ greeting: 'toggleEasyLanguage', toggleEasyLanguage: easyLanguage });
-    console.log("Im Send Message Alt: " + response.toggleEasyLanguage);
-    console.log("Im Send Message Alt Typ: " + typeof response.toggleEasyLanguage);
+    console.log("App.js toggleEasyLanguage: response is " + response.toggleEasyLanguage);
+    console.log("App.js toggleEasyLanguage: response type is " + typeof response.toggleEasyLanguage);
     return response;
   };
 
@@ -42,24 +43,22 @@ function App() {
   // Schickt eine Nachricht an den Service-Worker mit neuem Toggle-Wert
   const sendMessageToBackgroundAlt = async () => {
     const response = await chrome.runtime.sendMessage({ greeting: 'toggleAltText', toggleValueAlt: alternativeText });
-    console.log("Im Send Message Alt: " + response.toggleValueAlt);
-    console.log("Im Send Message Alt Typ: " + typeof response.toggleValueAlt);
+    console.log("App.js toggleAltText: response is " + response.toggleValueAlt);
+    console.log("App.js toggleAltText: response type is " + typeof response.toggleValueAlt);
     return response;
   };
 
   // onChange-Methode des Bild-Alt-Toggles im Interface
   const handleAlternativeTextChange = async () => {
-    console.log("Before sendMessageToBackgroundAlt");
+    console.log("App.js handleAlternativeTextChange");
     const response = await sendMessageToBackgroundAlt();
-    console.log("After sendMessageToBackgroundAlt", response);
-    console.log("Im Handle on Change Alt: " + response.toggleValueAlt);
     setAlternativeText(response.toggleValueAlt);
   };
 
 // onChange-Methode des Leichte-Sprache-Toggles im Interface
   const handleEasyLanguageChange = async () => {
+    console.log("App.js handleEasyLanguageChange");
     const response = await sendMessageToBackgroundEasyLanguage();
-    console.log("Im Handle on Change Alt: " + response.toggleEasyLanguage);
     setEasyLanguage(response.toggleEasyLanguage);
   };
 
